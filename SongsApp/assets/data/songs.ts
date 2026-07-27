@@ -9,7 +9,7 @@ export const songs = [
     genre: "Pop, Romance",
     releaseDate: "2023-05-12",
     duration: "3:13",
-    youtubeUrl: "https://www.youtube.com/results?search_query=Paradise+José+Lucas",
+    youtubeUrl: "https://www.youtube.com/watch?v=ZwerWW-wHzY",
   },
   {
     id: 2,
@@ -21,7 +21,7 @@ export const songs = [
     genre: "Electronic, Dance",
     releaseDate: "2023-06-01",
     duration: "2:30",
-    youtubeUrl: "https://www.youtube.com/results?search_query=Flames+NIINE+BigNoise+Yvvan+Back+Tyzn",
+    youtubeUrl: "https://www.youtube.com/watch?v=RB_5UTnpXZo",
   },
   {
     id: 3,
@@ -33,7 +33,7 @@ export const songs = [
     genre: "Pop",
     releaseDate: "2023-07-15",
     duration: "2:37",
-    youtubeUrl: "https://www.youtube.com/results?search_query=Somebody+Like+You+Mauve",
+    youtubeUrl: "https://www.youtube.com/watch?v=ntYj1uOnbFI",
   },
   {
     id: 4,
@@ -45,7 +45,7 @@ export const songs = [
     genre: "Dance, Pop",
     releaseDate: "2023-08-10",
     duration: "2:25",
-    youtubeUrl: "https://www.youtube.com/results?search_query=I'm+Right+For+You+Lieutenant+71+LU2VYK",
+    youtubeUrl: "https://www.youtube.com/watch?v=jURdSq1YY_Y",
   },
   {
     id: 5,
@@ -57,7 +57,7 @@ export const songs = [
     genre: "Indie, Electronic",
     releaseDate: "2023-09-05",
     duration: "2:29",
-    youtubeUrl: "https://www.youtube.com/results?search_query=Hollow+Unora+Aurila",
+    youtubeUrl: "https://www.youtube.com/watch?v=ZxF44-M2-kc",
   },
   {
     id: 6,
@@ -69,7 +69,7 @@ export const songs = [
     genre: "House, Electronic",
     releaseDate: "2023-09-20",
     duration: "1:47",
-    youtubeUrl: "https://www.youtube.com/results?search_query=Stay+by+My+Side+SRTW+nourii+CLOSR",
+    youtubeUrl: "https://www.youtube.com/watch?v=SIcufMzts0Y",
   },
   {
     id: 7,
@@ -81,7 +81,7 @@ export const songs = [
     genre: "Indie Pop",
     releaseDate: "2023-10-01",
     duration: "3:05",
-    youtubeUrl: "https://www.youtube.com/results?search_query=Morning+Sun+NSH+Atch+Hobes",
+    youtubeUrl: "https://www.youtube.com/watch?v=Oo7sEI47ESY",
   },
   {
     id: 8,
@@ -93,7 +93,7 @@ export const songs = [
     genre: "Pop",
     releaseDate: "2023-10-15",
     duration: "2:41",
-    youtubeUrl: "https://www.youtube.com/results?search_query=Smile+Friends+and+I",
+    youtubeUrl: "https://www.youtube.com/watch?v=pGGftKnPIHI",
   },
   {
     id: 9,
@@ -105,7 +105,7 @@ export const songs = [
     genre: "Electronic",
     releaseDate: "2023-11-01",
     duration: "2:48",
-    youtubeUrl: "https://www.youtube.com/results?search_query=Cold+Druu+MiNDTRiX+Vigil",
+    youtubeUrl: "https://www.youtube.com/watch?v=AZaZGAayxP8",
   },
   {
     id: 10,
@@ -117,7 +117,7 @@ export const songs = [
     genre: "Pop",
     releaseDate: "2023-11-12",
     duration: "2:37",
-    youtubeUrl: "https://www.youtube.com/results?search_query=Replay+Bloome",
+    youtubeUrl: "https://www.youtube.com/watch?v=XBlsALRIqys",
   },
   {
     id: 11,
@@ -129,7 +129,7 @@ export const songs = [
     genre: "Dance, Pop",
     releaseDate: "2023-11-25",
     duration: "2:29",
-    youtubeUrl: "https://www.youtube.com/results?search_query=Take+Me+Home+Lieutenant+71+LU2VYK",
+    youtubeUrl: "https://www.youtube.com/watch?v=ZTksCMz51r4",
   },
   {
     id: 12,
@@ -141,7 +141,7 @@ export const songs = [
     genre: "Electronic",
     releaseDate: "2023-12-01",
     duration: "2:27",
-    youtubeUrl: "https://www.youtube.com/results?search_query=Frozen+Tide+NSH",
+    youtubeUrl: "https://www.youtube.com/watch?v=ScsZ7T9SGK4",
   },
   {
     id: 13,
@@ -153,6 +153,6 @@ export const songs = [
     genre: "Pop, Ballad",
     releaseDate: "2023-12-15",
     duration: "2:27",
-    youtubeUrl: "https://www.youtube.com/results?search_query=What+We+Had+KONNA",
+    youtubeUrl: "https://www.youtube.com/watch?v=xXl_bV8oB8I",
   },
 ];
