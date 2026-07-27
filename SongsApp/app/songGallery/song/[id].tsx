@@ -1,6 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import {
+  doc,
+  getDoc,
+  increment,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
   Dimensions,
@@ -12,114 +20,256 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { songs } from "../../../assets/data/songs";
 
+import { songs } from "../../../assets/data/songs";
+import { auth, db } from "../../../firebaseconfig";
+import { useTheme } from "../../context/ThemeContext";
 
 const { height } = Dimensions.get("window");
-
-/* 🌸 Peónia Theme */
-const COLORS = {
-  background: "#FFF9F7",
-  card: "#F6D6DC",
-  rose: "#F2C1CC",
-  sage: "#9CAF9C",
-  textDark: "#3F3A3A",
-  textMuted: "#8B7E7E",
-  link: "#3b82f6",
-};
 
 export default function SongDetails() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
+  const { colors } = useTheme();
+
   const song = songs.find((m) => m.id.toString() === id);
+
   const [rating, setRating] = useState(0);
 
-  /* ⭐ Load saved rating */
+  const handlePlaySong = async () => {
+    if (!song) return;
+
+    const user = auth.currentUser;
+
+    if (!user) {
+      router.replace("/auth/login");
+      return;
+    }
+
+    const songRef = doc(
+      db,
+      "users",
+      user.uid,
+      "watched",
+      song.id.toString()
+    );
+
+    try {
+      const songDoc = await getDoc(songRef);
+
+      if (songDoc.exists()) {
+        await updateDoc(songRef, {
+          watchCount: increment(1),
+          lastWatched: serverTimestamp(),
+        });
+      } else {
+        await setDoc(songRef, {
+          songId: song.id,
+          title: song.title,
+          artist: song.artist,
+          genre: song.genre,
+          watchCount: 1,
+          lastWatched: serverTimestamp(),
+        });
+      }
+
+      await Linking.openURL(song.youtubeUrl);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     const loadRating = async () => {
       if (!song) return;
+
       const saved = await AsyncStorage.getItem(`rating-${song.id}`);
+
       if (saved) setRating(Number(saved));
     };
+
     loadRating();
   }, [song]);
 
-  /* 💾 Save rating */
   const handleRating = async (value: number) => {
     if (!song) return;
+
     setRating(value);
-    await AsyncStorage.setItem(`rating-${song.id}`, value.toString());
+
+    await AsyncStorage.setItem(
+      `rating-${song.id}`,
+      value.toString()
+    );
   };
 
-  /* 🕒 Recently Viewed */
   useEffect(() => {
-    const addToRecentlyViewed = async () => {
+    const addRecent = async () => {
       if (!song) return;
-      const stored = await AsyncStorage.getItem("recentlyViewed");
-      let recent: number[] = stored ? JSON.parse(stored) : [];
+
+      const stored =
+        await AsyncStorage.getItem("recentlyViewed");
+
+      let recent: number[] = stored
+        ? JSON.parse(stored)
+        : [];
+
       recent = recent.filter((x) => x !== song.id);
+
       recent.unshift(song.id);
+
       if (recent.length > 10) recent.pop();
-      await AsyncStorage.setItem("recentlyViewed", JSON.stringify(recent));
+
+      await AsyncStorage.setItem(
+        "recentlyViewed",
+        JSON.stringify(recent)
+      );
     };
-    addToRecentlyViewed();
+
+    addRecent();
   }, [song]);
 
   if (!song) {
     return (
       <View style={styles.notFound}>
-        <Text style={{ fontFamily: "Inter" }}>Song not found</Text>
+        <Text>Song not found</Text>
       </View>
     );
   }
 
   return (
-   <ScrollView
-         style={styles.container}
-         contentContainerStyle={{ paddingBottom: 80 }}
-       >
-      {/* 🔙 Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={22} color={COLORS.textDark} />
+    <ScrollView
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.background,
+        },
+      ]}
+      contentContainerStyle={{
+        paddingBottom: 100,
+      }}
+    >
+      <TouchableOpacity
+        style={[
+          styles.backButton,
+          {
+            backgroundColor: colors.footer,
+          },
+        ]}
+        onPress={() => router.back()}
+      >
+        <Ionicons
+          name="arrow-back"
+          size={22}
+          color={colors.text}
+        />
       </TouchableOpacity>
 
-      {/* 🎵 Cover Image */}
-      <Image source={song.image} style={styles.image} />
+      <Image
+        source={song.image}
+        style={styles.image}
+      />
 
-      {/* 📄 Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>{song.title}</Text>
+        <Text
+          style={[
+            styles.title,
+            {
+              color: colors.text,
+            },
+          ]}
+        >
+          {song.title}
+        </Text>
 
-        <Text style={styles.description}>{song.description}</Text>
+        <Text
+          style={[
+            styles.description,
+            {
+              color: colors.muted,
+            },
+          ]}
+        >
+          {song.description}
+        </Text>
 
-        {/* ℹ Info Card */}
-        <View style={styles.infoCard}>
-          <InfoRow label="Artist" value={song.artist} />
-          <InfoRow label="Genre" value={song.genre} />
-          <InfoRow label="Release" value={song.releaseDate} />
+        <View
+          style={[
+            styles.infoCard,
+            {
+              backgroundColor: colors.footer,
+            },
+          ]}
+        >
+          <InfoRow
+            label="Artist"
+            value={song.artist}
+          />
+
+          <InfoRow
+            label="Genre"
+            value={song.genre}
+          />
+
+          <InfoRow
+            label="Release"
+            value={song.releaseDate}
+          />
 
           <TouchableOpacity
-            onPress={() => Linking.openURL(song.youtubeUrl)}
+            onPress={handlePlaySong}
             style={styles.playButton}
           >
-            <Ionicons name="play" size={18} color={COLORS.textDark} />
-            <Text style={styles.playText}>Play on YouTube</Text>
+            <Ionicons
+              name="play"
+              size={18}
+              color={colors.text}
+            />
+
+            <Text
+              style={[
+                styles.playText,
+                {
+                  color: colors.active,
+                },
+              ]}
+            >
+              Play on YouTube
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* ⭐ Rating */}
         <View style={styles.ratingSection}>
-          <Text style={styles.rateTitle}>Rate this song</Text>
+          <Text
+            style={[
+              styles.rateTitle,
+              {
+                color: colors.text,
+              },
+            ]}
+          >
+            Rate this song
+          </Text>
 
           <View style={styles.starsRow}>
             {[1, 2, 3, 4, 5].map((star) => (
-              <TouchableOpacity key={star} onPress={() => handleRating(star)}>
+              <TouchableOpacity
+                key={star}
+                onPress={() =>
+                  handleRating(star)
+                }
+              >
                 <Ionicons
-                  name={star <= rating ? "star" : "star-outline"}
+                  name={
+                    star <= rating
+                      ? "star"
+                      : "star-outline"
+                  }
                   size={32}
-                  color={COLORS.rose}
-                  style={{ marginHorizontal: 6 }}
+                  color={colors.active}
+                  style={{
+                    marginHorizontal: 6,
+                  }}
                 />
               </TouchableOpacity>
             ))}
@@ -130,21 +280,45 @@ export default function SongDetails() {
   );
 }
 
-/* 🔹 Reusable Info Row */
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  const { colors } = useTheme();
+
   return (
     <View style={{ marginBottom: 10 }}>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
+      <Text
+        style={[
+          styles.label,
+          {
+            color: colors.muted,
+          },
+        ]}
+      >
+        {label}
+      </Text>
+
+      <Text
+        style={[
+          styles.value,
+          {
+            color: colors.text,
+          },
+        ]}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
 
-/* 🎨 Styles */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
 
   backButton: {
@@ -152,7 +326,6 @@ const styles = StyleSheet.create({
     top: 45,
     left: 20,
     zIndex: 2,
-    backgroundColor: COLORS.card,
     padding: 8,
     borderRadius: 20,
   },
@@ -169,20 +342,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 34,
     fontFamily: "Amatic",
-    color: COLORS.textDark,
     marginBottom: 8,
   },
 
   description: {
     fontSize: 15,
     fontFamily: "Inter",
-    color: COLORS.textMuted,
     marginBottom: 20,
     lineHeight: 22,
   },
 
   infoCard: {
-    backgroundColor: COLORS.card,
     borderRadius: 18,
     padding: 16,
   },
@@ -190,13 +360,11 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontFamily: "Inter",
-    color: COLORS.textMuted,
   },
 
   value: {
     fontSize: 16,
     fontFamily: "Inter",
-    color: COLORS.textDark,
   },
 
   playButton: {
@@ -209,7 +377,6 @@ const styles = StyleSheet.create({
   playText: {
     fontFamily: "Inter",
     fontSize: 15,
-    color: COLORS.link,
   },
 
   ratingSection: {
@@ -220,7 +387,6 @@ const styles = StyleSheet.create({
   rateTitle: {
     fontFamily: "Amatic",
     fontSize: 26,
-    color: COLORS.textDark,
     marginBottom: 10,
   },
 
@@ -233,4 +399,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-});  
+});

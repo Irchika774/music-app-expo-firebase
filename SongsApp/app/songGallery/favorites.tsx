@@ -1,95 +1,296 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  FlatList,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  useColorScheme,
 } from "react-native";
 
-/* 🌸 Shared Themes (same as Home) */
-const THEMES = {
-  light: {
-    background: "#FFF9F7",
-    card: "#F6D6DC",
-    text: "#3F3A3A",
-    muted: "#8B7E7E",
-    accent: "#ef4444",
-    button: "#E6EFE6",
-  },
-  dark: {
-    background: "#0f172a",
-    card: "#1e293b",
-    text: "#ffffff",
-    muted: "#94a3b8",
-    accent: "#ef4444",
-    button: "#1e293b",
-  },
-};
+import {
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+} from "firebase/firestore";
+
+import { songs } from "../../assets/data/songs";
+import { auth, db } from "../../firebaseconfig";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Favorites() {
   const router = useRouter();
-  const scheme = useColorScheme();
-  const theme = scheme === "dark" ? "dark" : "light";
-  const colors = THEMES[theme];
+
+  const { colors } = useTheme();
+
+  const [favoriteSongs, setFavoriteSongs] =
+    useState<typeof songs>([]);
+
+
+  useEffect(() => {
+    const user = auth.currentUser;
+
+    if (!user) return;
+
+    const favRef = collection(
+      db,
+      "users",
+      user.uid,
+      "favorites"
+    );
+
+    const unsubscribe = onSnapshot(
+      favRef,
+      (snapshot) => {
+        const ids = snapshot.docs.map((doc) =>
+          Number(doc.id)
+        );
+
+        const favSongs = songs.filter((song) =>
+          ids.includes(song.id)
+        );
+
+        setFavoriteSongs(favSongs);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
+
+  // Remove from favorite list
+  const removeFavorite = async (songId: number) => {
+    const user = auth.currentUser;
+
+    if (!user) return;
+
+    const favoriteRef = doc(
+      db,
+      "users",
+      user.uid,
+      "favorites",
+      songId.toString()
+    );
+
+    await deleteDoc(favoriteRef);
+  };
+
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Ionicons
-        name="heart"
-        size={80}
-        color={colors.accent}
-        style={{ marginBottom: 20 }}
-      />
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.background,
+        },
+      ]}
+    >
 
-      <Text style={[styles.title, { color: colors.text }]}>
+      <Text
+        style={[
+          styles.title,
+          {
+            color: colors.text,
+          },
+        ]}
+      >
         Your Favorites
       </Text>
 
-      <Text style={[styles.subtitle, { color: colors.muted }]}>
-        Your vibe will appear here
-      </Text>
+
+      <FlatList
+        data={favoriteSongs}
+        keyExtractor={(item) =>
+          item.id.toString()
+        }
+        numColumns={2}
+        contentContainerStyle={{
+          paddingBottom: 20,
+        }}
+
+        renderItem={({ item }) => (
+
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: colors.card,
+              },
+            ]}
+          >
+
+            <TouchableOpacity
+              onPress={() =>
+                router.push(
+                  `/songGallery/song/${item.id}`
+                )
+              }
+            >
+
+              <Image
+                source={item.image}
+                style={styles.image}
+              />
+
+
+              <Text
+                style={[
+                  styles.songTitle,
+                  {
+                    color: colors.text,
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {item.title}
+              </Text>
+
+
+              <Text
+                style={[
+                  styles.artist,
+                  {
+                    color: colors.muted,
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {item.artist}
+              </Text>
+
+            </TouchableOpacity>
+
+
+
+            {/* Favorite Button */}
+
+            <TouchableOpacity
+              style={styles.favoriteButton}
+              onPress={() =>
+                removeFavorite(item.id)
+              }
+            >
+
+              <Ionicons
+                name="heart"
+                size={26}
+                color={colors.danger}
+              />
+
+            </TouchableOpacity>
+
+
+          </View>
+
+        )}
+      />
+
+
 
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: colors.button }]}
-        onPress={() => router.push("./")}
+        style={[
+          styles.button,
+          {
+            backgroundColor: colors.card,
+          },
+        ]}
+        onPress={() =>
+          router.push("/songGallery")
+        }
       >
-        <Text style={[styles.buttonText, { color: colors.text }]}>
+
+        <Text
+          style={[
+            styles.buttonText,
+            {
+              color: colors.text,
+            },
+          ]}
+        >
           Go Back Home
         </Text>
+
       </TouchableOpacity>
+
+
     </View>
   );
 }
 
-/* 🎨 Styles */
+
+
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     padding: 20,
+    alignItems: "center",
   },
+
+
   title: {
     fontSize: 26,
     fontWeight: "700",
-    marginBottom: 8,
+    marginBottom: 20,
   },
-  subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 30,
+
+
+  card: {
+    width: 160,
+    margin: 12,
+    borderRadius: 16,
+    paddingBottom: 10,
+    overflow: "hidden",
   },
+
+
+  image: {
+    width: 160,
+    height: 220,
+    borderRadius: 16,
+  },
+
+
+  songTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginTop: 8,
+    paddingHorizontal: 6,
+  },
+
+
+  artist: {
+    fontSize: 14,
+    paddingHorizontal: 6,
+    marginTop: 2,
+  },
+
+
+  favoriteButton: {
+    position: "absolute",
+    right: 10,
+    bottom: 10,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 6,
+  },
+
+
   button: {
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 14,
-    elevation: 4,
+    marginTop: 10,
+    marginBottom: 110,
   },
+
+
   buttonText: {
     fontSize: 16,
     fontWeight: "600",
   },
+
 });
