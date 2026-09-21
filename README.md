@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
@@ -119,4 +119,3 @@ Designed with clean architecture in mind, SongVerse acts as a strong portfolio p
  │ Firebase Auth  │       │  AsyncStorage  │
  │ (Cloud Layer)  │       │ (Device Layer) │
  └────────────────┘       └────────────────┘
->>>>>>> dd4ce0dcfe1d0120e78b3b968f2d4a1d6b41733e
